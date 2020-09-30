@@ -23,7 +23,7 @@ interface CartContext {
   decrement(id: string): void;
 }
 
-const CartContext = createContext<CartContext | null>(null);
+const CartContext = createContext<CartContext>({} as CartContext);
 
 const CartProvider: React.FC = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -86,11 +86,16 @@ const CartProvider: React.FC = ({ children }) => {
     async id => {
       const newProducts = products.map(product =>
         product.id === id
-          ? { ...product, quantity: product.quantity - 1 }
+          ? {
+              ...product,
+              quantity: product.quantity > 0 ? product.quantity - 1 : 0,
+            }
           : product,
       );
 
-      setProducts(newProducts);
+      const productSet = newProducts.filter(p => p.quantity !== 0);
+
+      setProducts(productSet);
 
       await AsyncStorage.setItem(
         '@GoMarketplace:products',
